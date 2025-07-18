@@ -238,6 +238,13 @@ def get_parser() -> argparse.ArgumentParser:
             "Useful for reducing memory consumption during large model inference."
         ),
     )
+    argparser.add_argument(
+        "--calibration_data_provider",
+        type=str,
+        choices=["CalibrationDataProvider", "SamplesDataProvider"],
+        default="CalibrationDataProvider",
+        help="The calibration data provider class to use for calibration.",
+    )
     return argparser
 
 
@@ -281,6 +288,7 @@ def main():
         passes=args.passes,
         simplify=args.simplify,
         calibrate_per_node=args.calibrate_per_node,
+        calibration_data_provider=args.calibration_data_provider,
     )
 
 

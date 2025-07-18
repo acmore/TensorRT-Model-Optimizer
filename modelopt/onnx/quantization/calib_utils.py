@@ -33,6 +33,21 @@ from modelopt.onnx.utils import (
 CalibrationDataType = Union[np.ndarray, dict[str, np.ndarray]]  # noqa: UP007
 
 
+class SamplesDataProvider(CalibrationDataReader):
+    def __init__(self, onnx_path: str, calibration_data: CalibrationDataType, calibration_shapes: str | None = None):
+        assert isinstance(calibration_data, np.ndarray), "Calibration data must be numpy array"
+        assert isinstance(calibration_data[0], dict), "Calibration data must be a list of dictionaries"
+
+        self.calibration_data_list = calibration_data.flatten()
+        self.calibration_data_reader = iter(self.calibration_data_list)
+
+    def get_next(self):
+        return next(self.calibration_data_reader, None)
+
+    def get_first(self):
+        return self.calibration_data_list[0]
+
+
 class CalibrationDataProvider(CalibrationDataReader):
     """Calibration data provider class."""
 

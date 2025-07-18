@@ -45,6 +45,8 @@ from modelopt.onnx.logging_config import configure_logging, logger
 from modelopt.onnx.op_types import is_data_dependent_shape_op
 from modelopt.onnx.quantization.calib_utils import (
     CalibrationDataProvider,
+    SamplesDataProvider,
+    CalibrationDataReader,
     CalibrationDataType,
     RandomDataProvider,
 )
@@ -227,6 +229,7 @@ def quantize(
     passes: list[str] = ["concat_elimination"],
     simplify: bool = False,
     calibrate_per_node: bool = False,
+    calibration_data_provider: str | CalibrationDataReader = CalibrationDataProvider,
     **kwargs: Any,
 ) -> None:
     """Quantizes the provided ONNX model.
@@ -304,6 +307,8 @@ def quantize(
         calibrate_per_node:
             Calibrate the model node by node instead of calibrating the entire model. This allowes calibration with
             a lower system memory with the cost of longer calibration time.
+        calibration_data_provider:
+            Calibration data provider class. If None, a random data provider will be used.
         kwargs:
             Additional keyword arguments for int4 quantization, including:
             - awqlite_alpha_step (float): Alpha step for lite, range [0, 1].
@@ -373,7 +378,9 @@ def quantize(
     if calibration_data is None:
         calibration_data_reader = RandomDataProvider(onnx_path, calibration_shapes)
     else:
-        calibration_data_reader = CalibrationDataProvider(
+        if isinstance(calibration_data_provider, str):
+            calibration_data_provider = globals()[calibration_data_provider]
+        calibration_data_reader = calibration_data_provider(
             onnx_path, calibration_data, calibration_shapes
         )
 
